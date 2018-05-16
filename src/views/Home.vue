@@ -144,6 +144,7 @@ option {
 .issues {
   display: flex;
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .issues-item {
