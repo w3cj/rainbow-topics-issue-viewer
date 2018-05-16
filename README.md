@@ -2,6 +2,8 @@
 
 A sorted filterable view of the issues on the 🌈 Coding Train 🚂 [Rainbow Topics repo](https://github.com/CodingTrain/Rainbow-Topics/issues).
 
+View it [here](https://rainbow-topics.now.sh/)
+
 ## Details
 
 Built with Vue.js, Vuex and the Github API.
