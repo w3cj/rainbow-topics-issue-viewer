@@ -13,6 +13,7 @@
     <h3 class="about" v-if="!loading">About: Sorted by number of positive emojis (👍, ❤️, 🎉 and 😁). Older issues with the same number of positive emojis will be listed first.</h3>
     <div class="issues">
       <h3 class="status">{{status}}</h3>
+      <div v-if="loading" class="loading" style="width: 100%; height: 50px;"></div>
       <pagination
         ref="topButtons"
         v-if="!loading"

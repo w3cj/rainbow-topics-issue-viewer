@@ -1,5 +1,5 @@
 <template>
-  <div class="video-card">
+  <div class="video-card" :class="{ moreInfo: moreInfo }">
     <div class="video-header">
       <h3>{{issue.title}}</h3>
       <span class="video-date">{{issue.formattedDate}}</span>
@@ -12,32 +12,77 @@
           v-for="label in issue.labels"
           :key="label.id">{{label.name}}</button>
       </div>
-      <div class="user">
-        <a class="avatar-name" :href="issue.user.html_url">
-          <img class="avatar" :src="issue.user.avatar_url">
-          <span>{{issue.user.login}}</span>
-        </a>
-      </div>
+      <avatar class="user" :user="issue.user"></avatar>
     </div>
     <div class="video-description">
       <p class="issue-summary" v-html="issue.summary"></p>
     </div>
+    <all-reactions
+      v-if="moreInfo"
+      :reactionsError="reactionsError"
+      :reactionsByType="reactionsByType"
+      :reactionImages="reactionImages">
+    </all-reactions>
     <reactions
       :issueReactions="issue.reactions"
       :reactions="reactions"
       :reactionImages="reactionImages"></reactions>
     <div class="buttons">
-      <a style="background: #49BB6C" :href="issue.html_url" target="blank">View on Github</a>
+      <button
+        :class="{ loading: loading }"
+        :disabled="loading"
+        class="view-reactions-button"
+        @click="getMoreInfo()">{{moreInfo ? 'Hide' : 'View'}} Reactions</button>
+      <a class="view-github-button" :href="issue.html_url" target="blank">View on Github</a>
     </div>
   </div>
 </template>
 <script>
+import Avatar from '@/components/Avatar';
 import Reactions from '@/components/Reactions';
+import AllReactions from '@/components/AllReactions';
+import GithubAPI from '@/GithubAPI';
 
 export default {
   props: ['issue', 'reactions', 'reactionImages'],
   components: {
-    Reactions
+    Reactions,
+    Avatar,
+    AllReactions
+  },
+  data: () => ({
+    loading: false,
+    hasMoreInfo: false,
+    reactionsError: '',
+    moreInfo: false,
+    reactionsByType: {}
+  }),
+  methods: {
+    async getMoreInfo() {
+      if (!this.moreInfo && !this.hasMoreInfo) {
+        this.loading = true;
+        let reactions = [];
+        try {
+          reactions = await GithubAPI.getReactions(this.issue.number);
+          this.reactionsError = '';
+          this.hasMoreInfo = true;
+        } catch (error) {
+          this.reactionsError = error.message;
+          this.hasMoreInfo = false;
+        }
+
+        const reactionsByType = reactions.reduce((byType, reaction) => {
+          byType[reaction.content] = byType[reaction.content] || [];
+          byType[reaction.content].push(reaction);
+          return byType;
+        }, {});
+        this.reactionsByType = reactionsByType;
+        this.moreInfo = true;
+        this.loading = false;
+      } else {
+        this.moreInfo = !this.moreInfo;
+      }
+    }
   }
 };
 </script>
@@ -79,13 +124,6 @@ export default {
   justify-content: space-between;
 }
 
-.avatar-name {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-}
-
 .video-description {
   max-height: 400px;
   overflow: auto;
@@ -104,17 +142,26 @@ export default {
   font-family: 'Open Sans', sans-serif;
 }
 
-.avatar {
-  height: 50px;
-  width: 50px;
-  border-radius: 50%;
-}
-
 a {
   text-decoration: none;
 }
 
 a:hover {
   color: #d9437f;
+}
+
+.moreInfo {
+  width: 100%;
+}
+
+.view-reactions-button {
+  background: #f1c500;
+  color: white;
+  font-size: 1em;
+}
+
+.view-github-button {
+  padding: auto;
+  background: #49bb6c !important;
 }
 </style>
