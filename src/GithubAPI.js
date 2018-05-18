@@ -74,7 +74,7 @@ async function get(url) {
       Accept: 'application/vnd.github.squirrel-girl-preview'
     }
   });
-  if (response.status == 403) {
+  if (response.status == 403 || response.status == 401) {
     return Promise.reject(
       new Error(
         'Github API Rate Limit Exceded on this IP. Try again in 1 hour OR set localStorage.GITHUB_ACCESS_TOKEN to be a token with public_repo access generated here: https://github.com/settings/tokens'
